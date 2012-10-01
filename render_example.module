@@ -52,6 +52,131 @@ function render_example_info() {
 }
 
 
+/**
+ * Provides a number of render arrays and show what they do.
+ *
+ * Each array is keyed by a description; it's returned for rendering at page
+ * render time. It's easy to add new examples to this.
+ *
+ * The array items in $demos are intended to be raw, normal render arrays
+ * that can be experimented with to end up with different outcomes.
+ */
+function render_example_arrays() {
+
+  $interval = 60; // Interval in seconds for cache update with #cache.
+
+  $demos = array(
+    // Demonstrate the simplest markup, a #markup element.
+    t('Super simple #markup')  => array(
+      '#markup' => t('Some basic text in a #markup (shows basic markup and how it is rendered)'),
+    ),
+
+    // Shows how #prefix and #suffix can add markup into an array.
+    t('Using #prefix and #suffix') => array(
+      '#markup' => t('This one adds a prefix and suffix, which put a div around the item'),
+      '#prefix' => '<div><br/>(prefix)<br/>',
+      '#suffix' => '<br/>(suffix)</div>',
+    ),
+
+    // When #theme is provided, it is the #theme function's job to figure out
+    // the meaning of the render array. The #theme function receives the entire
+    // element in $variables and must return it, where it will be the content
+    // of '#children'. When a #theme or other function is provided, custom
+    // properties can be invented and used as needed, as the #separator
+    // property provided here.
+    //
+    // If #theme is not provided, either explicitly or by the underlying
+    // element, then the children are rendered using their own properties and
+    // the results go into #children.
+    t('theme for an element') => array(
+      'child' => array(
+        t('This is some text that should be put together'),
+        t('This is some more text that we need'),
+      ),
+      '#separator' => ' | ',  // Made up for this theme function.
+      '#theme' => 'render_example_aggregate',
+    ),
+
+    // #theme_wrappers provides an array of theme functions which theme the
+    // envelope or "wrapper" of a set of child elements. The theme function
+    // finds its element children (the sub-arrays) already rendered in
+    // '#children'.
+    t('theme_wrappers demonstration') => array(
+      'child1' => array('#markup' => t('Markup for child1')),
+      'child2' => array('#markup' => t('Markup for child2')),
+      '#theme_wrappers' => array('render_example_add_div', 'render_example_add_notes'),
+    ),
+
+    // Add '#pre_render' and '#post_render' handlers.
+    // - '#pre_render' functions get access to the array before it is rendered
+    //   and can change it. This is similar to a theme function, but it is a
+    //   specific fixed function and changes the array in place rather than
+    //   rendering it..
+    // - '#post_render' functions get access to the rendered content, but also
+    //   have the original array available.
+    t('pre_render and post_render') => array(
+      '#markup' => '<div style="color:green">' . t('markup for pre_render and post_render example') . '</div>',
+      '#pre_render' => array('render_example_add_suffix'),
+      '#post_render' => array('render_example_add_prefix'),
+    ),
+
+    // Cache an element for $interval seconds using #cache.
+    // The assumption here is that this is an expensive item to render, perhaps
+    // large or otherwise expensive. Of course here it's just a piece of markup,
+    // so we don't get the value.
+    //
+    // #cache allows us to set
+    // - 'keys', an array of strings that will create the string cache key.
+    // - 'bin', the cache bin
+    // - 'expire', the expire timestamp. Note that this is actually limited
+    //   to the granularity of a cron run.
+    // - 'granularity', a bitmask determining at what level the caching is done
+    //   (user, role, page).
+    t('cache demonstration') => array(
+      // If your expensive function were to be executed here it would happen
+      // on every page load regardless of the cache. The actual markup is
+      // added via the #pre_render function, so that drupal_render() will only
+      // execute the expensive function if this array has not been cached.
+      '#markup' => '',
+      '#pre_render' => array('render_example_cache_pre_render'),
+      '#cache' => array(
+        'keys' => array('render_example', 'cache', 'demonstration'),
+        'bin' => 'cache',
+        'expire' => time() + $interval,
+        'granularity' => DRUPAL_CACHE_PER_PAGE | DRUPAL_CACHE_PER_ROLE,
+      ),
+    ),
+  );
+
+
+  // The rest of this function just places the above arrays in a context where
+  // they can be rendered (hopefully attractively and usefully) on the page.
+  $page_array = array();
+  foreach ($demos as $key => $item) {
+    $page_array[$key]['#theme_wrappers'] = array('render_array');
+    $page_array[$key]['#description'] = $key;
+
+    $page_array[$key]['unrendered'] = array(
+      '#prefix' => '<div class="unrendered-label">' . t('Unrendered array (as plain text and with a krumo version)') . ':</div>',
+      '#type' => 'markup',
+      '#markup' => htmlentities(drupal_var_export($item)),
+    );
+    $page_array[$key]['kpr'] = array(
+      // The kpr() function is from devel module and is here only allow us
+      // to output the array in a way that's easy to explore.
+      '#markup' => kpr($item, TRUE),
+    );
+    $page_array[$key]['hr'] = array('#markup' => '<hr/>');
+    $page_array[$key]['rendered'] = array($item);
+    $page_array[$key]['rendered']['#prefix'] = '<p><em>Rendered version (light blue)</em>:</p>' . '<div class="rendered">';
+    $page_array[$key]['rendered']['#suffix'] = '</div>';
+  }
+
+  return $page_array;
+}
+
+
+
 /*************** Altering Section **************************
  * The following section of the example builds and arranges the altering
  * example.
