@@ -175,6 +175,41 @@ function render_example_arrays() {
   return $page_array;
 }
 
+/**
+ * A '#pre_render' function.
+ *
+ * @param $element
+ *   The element which will be rendered.
+ *
+ * @return
+ *   The altered element. In this case we add a #prefix to it.
+ */
+function render_example_add_suffix($element) {
+  $element['#suffix'] = '<div style="color:red">' . t('This #suffix was added by a #pre_render') . '</div>';
+
+  // The following line is due to the bug described in
+  // http://drupal.org/node/914792. A #markup element's #pre_render must set
+  // #children because it replaces the default #markup pre_render, which is
+  // drupal_pre_render_markup().
+  $element['#children'] = $element['#markup'];
+  return $element;
+}
+
+/**
+ * A '#post_render' function to add a little markup onto the end markup.
+ *
+ * @param $markup
+ *   The rendered element.
+ * @param $element
+ *   The element which was rendered (for reference)
+ *
+ * @return
+ *   Markup altered as necessary. In this case we add a little postscript to it.
+ */
+function render_example_add_prefix($markup, $element) {
+  $markup = '<div style="color:blue">This markup was added after rendering by a #post_render</div>' . $markup;
+  return $markup;
+}
 
 
 /*************** Altering Section **************************
