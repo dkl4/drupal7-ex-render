@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @file
+ * Demonstrates render arrays.
+ */
+
+/**
+ * @defgroup render_example Example: Render
+ * @ingroup examples
+ * @{
+ * Demonstrate how render arrays are arranged and how they can be altered.
+ * This alters blocks and the page to show the actual render array
+ * that is being used to create each item.
+ *
+ * @see drupal_render()
+ */
+
+// This allows drupal_var_export() to work.
+require_once('includes/utility.inc');
+
+/**
+ * Implements hook_menu().
+ */
+function render_example_menu() {
+  $items['examples/render_example'] = array(
+    'title'           => 'Render Example',
+    'page callback'   => 'render_example_info',
+    'access callback' => TRUE,
+  );
+  $items['examples/render_example/altering'] = array(
+    'title' => 'Alter pages and blocks',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('render_example_demo_form'),
+    'access arguments' => array('access devel information'),
+  );
+  $items['examples/render_example/arrays'] = array(
+    'title'           => 'Render array examples',
+    'page callback'   => 'render_example_arrays',
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Simple basic information about the module; an entry point.
+ */
+function render_example_info() {
+  return t('The render example provides a <ul><li><a href="!arrays">demonstration of of render array usage</a></li><li><a href="!alter">using hook_page_alter()</a> to make various changes on a page.</li></ul>', array('!arrays' => url('examples/render_example/arrays'), '!alter' => url('examples/render_example/altering')));
+}
+
