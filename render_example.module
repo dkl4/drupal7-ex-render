@@ -94,7 +94,7 @@ function render_example_arrays() {
         t('This is some more text that we need'),
       ),
       '#separator' => ' | ',  // Made up for this theme function.
-      '#theme' => 'render_example_aggregate',
+      '#theme'     => 'render_example_aggregate',
     ),
 
     // #theme_wrappers provides an array of theme functions which theme the
@@ -102,8 +102,8 @@ function render_example_arrays() {
     // finds its element children (the sub-arrays) already rendered in
     // '#children'.
     t('theme_wrappers demonstration') => array(
-      'child1' => array('#markup' => t('Markup for child1')),
-      'child2' => array('#markup' => t('Markup for child2')),
+      'child1'          => array('#markup' => t('Markup for child1')),
+      'child2'          => array('#markup' => t('Markup for child2')),
       '#theme_wrappers' => array('render_example_add_div', 'render_example_add_notes'),
     ),
 
@@ -115,8 +115,8 @@ function render_example_arrays() {
     // - '#post_render' functions get access to the rendered content, but also
     //   have the original array available.
     t('pre_render and post_render') => array(
-      '#markup' => '<div style="color:green">' . t('markup for pre_render and post_render example') . '</div>',
-      '#pre_render' => array('render_example_add_suffix'),
+      '#markup'      => '<div style="color:green">' . t('markup for pre_render and post_render example') . '</div>',
+      '#pre_render'  => array('render_example_add_suffix'),
       '#post_render' => array('render_example_add_prefix'),
     ),
 
@@ -137,12 +137,12 @@ function render_example_arrays() {
       // on every page load regardless of the cache. The actual markup is
       // added via the #pre_render function, so that drupal_render() will only
       // execute the expensive function if this array has not been cached.
-      '#markup' => '',
+      '#markup'     => '',
       '#pre_render' => array('render_example_cache_pre_render'),
-      '#cache' => array(
-        'keys' => array('render_example', 'cache', 'demonstration'),
-        'bin' => 'cache',
-        'expire' => time() + $interval,
+      '#cache'      => array(
+        'keys'        => array('render_example', 'cache', 'demonstration'),
+        'bin'         => 'cache',
+        'expire'      => time() + $interval,
         'granularity' => DRUPAL_CACHE_PER_PAGE | DRUPAL_CACHE_PER_ROLE,
       ),
     ),
@@ -154,11 +154,11 @@ function render_example_arrays() {
   $page_array = array();
   foreach ($demos as $key => $item) {
     $page_array[$key]['#theme_wrappers'] = array('render_array');
-    $page_array[$key]['#description'] = $key;
+    $page_array[$key]['#description']    = $key;
 
     $page_array[$key]['unrendered'] = array(
       '#prefix' => '<div class="unrendered-label">' . t('Unrendered array (as plain text and with a krumo version)') . ':</div>',
-      '#type' => 'markup',
+      '#type'   => 'markup',
       '#markup' => htmlentities(drupal_var_export($item)),
     );
     $page_array[$key]['kpr'] = array(
@@ -166,8 +166,8 @@ function render_example_arrays() {
       // to output the array in a way that's easy to explore.
       '#markup' => kpr($item, TRUE),
     );
-    $page_array[$key]['hr'] = array('#markup' => '<hr/>');
-    $page_array[$key]['rendered'] = array($item);
+    $page_array[$key]['hr']                  = array('#markup' => '<hr/>');
+    $page_array[$key]['rendered']            = array($item);
     $page_array[$key]['rendered']['#prefix'] = '<p><em>Rendered version (light blue)</em>:</p>' . '<div class="rendered">';
     $page_array[$key]['rendered']['#suffix'] = '</div>';
   }
@@ -236,4 +236,130 @@ function render_example_demo_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
+
+/**
+ * Implements hook_page_alter().
+ *
+ * Alters the page in several different ways based on how the form has been
+ * configured.
+ */
+function render_example_page_alter(&$page) {
+
+  $original_page = $page;
+
+  // Re-sort the sidebar in reverse order.
+  if (variable_get('render_example_reverse_sidebar', FALSE) && !empty($page['sidebar_first'])) {
+    $page['sidebar_first'] = array_reverse($page['sidebar_first']);
+    foreach (element_children($page['sidebar_first']) as $element) {
+      // Reverse the weights if they exist.
+      if (!empty($page['sidebar_first'][$element]['#weight'])) {
+        $page['sidebar_first'][$element]['#weight'] *= -1;
+      }
+    }
+    $page['sidebar_first']['#sorted'] = FALSE;
+  }
+
+  // Add a list of items to the top of sidebar_first.
+  // This shows how #theme and #theme_wrappers work.
+  if (variable_get('render_example_note_about_render_arrays', FALSE) && !empty($page['sidebar_first'])) {
+    $items = array(
+      t('Render arrays are everywhere in D7'),
+      t('Leave content unrendered as much as possible'),
+      t('This allows rearrangement and alteration very late in page cycle'),
+    );
+
+    $note = array(
+      '#title' => t('Render Array Example'),
+      '#items' => $items,
+
+      // The functions in #pre_render get to alter the actual data before it
+      // gets rendered by the various theme functions.
+      '#pre_render' => array('render_example_change_to_ol'),
+      // The functions in #post_render get both the element and the rendered
+      // data and can add to the rendered data.
+      '#post_render' => array('render_example_add_hr'),
+      // The #theme theme operation gets the first chance at rendering the
+      // element and its children.
+      '#theme' => 'item_list',
+      // Then the theme operations in #theme_wrappers can wrap more around
+      // what #theme left in #chilren.
+      '#theme_wrappers' => array('render_example_add_div', 'render_example_add_notes'),
+      '#weight' => -9999,
+    );
+    $page['sidebar_first']['render_array_note'] = $note;
+    $page['sidebar_first']['#sorted']           = FALSE;
+  }
+
+
+  // Move the navigation menu into the content area.
+  if (variable_get('render_example_move_navigation_menu', FALSE) && !empty($page['sidebar_first']['system_navigation']) && !empty($page['content'])) {
+    $page['content']['system_navigation']            = $page['sidebar_first']['system_navigation'];
+    $page['content']['system_navigation']['#weight'] = -99999;
+    unset($page['content']['#sorted']);
+    unset($page['sidebar_first']['system_navigation']);
+  }
+
+  // Show the render array used to build the page render array display.
+  if (variable_get('render_example_show_page', FALSE)) {
+    $form['render_example_page_fieldset'] = array(
+      '#type'        => 'fieldset',
+      '#title'       => t('Page render array'),
+      '#collapsible' => TRUE,
+      '#collapsed'   => TRUE,
+    );
+    $form['render_example_page_fieldset']['markup'] = array(
+      // The kpr() function is from devel module and is here only allow us
+      // to output the array in a way that's easy to explore.
+      '#markup' => kpr($page, TRUE),
+    );
+    $page['content']['page_render_array']            = drupal_get_form('render_example_embedded_form', $form);
+    $page['content']['page_render_array']['#weight'] = -999999;
+    $page['content']['#sorted']                      = FALSE;
+  }
+
+  // Add render array to the bottom of each block
+  if (variable_get('render_example_show_block', FALSE)) {
+    foreach (element_children($page) as $region_name) {
+      foreach (element_children($page[$region_name]) as $block_name) {
+
+        // Push the block down a level so we can add another block after it.
+        $old_block = $page[$region_name][$block_name];
+        $page[$region_name][$block_name] = array(
+          $block_name => $old_block,
+        );
+        $form['render_example_block_fieldset'] = array(
+          '#type'        => 'fieldset',
+          '#title'       => t('Block render array'),
+          '#collapsible' => TRUE,
+          '#collapsed'   => TRUE,
+        );
+
+        $form['render_example_block_fieldset']['markup'] = array(
+          '#type'   => 'item',
+          '#title'  => t('%blockname block render array', array('%blockname' => $block_name)),
+          // The kpr() function is from devel module and is here only allow us
+          // to output the array in a way that's easy to explore.
+          '#markup' => kpr($old_block, TRUE),
+        );
+
+        // Add the new block that contains the render array.
+        $page[$region_name][$block_name]['render_example_block_render_array']            =  drupal_get_form('render_example_embedded_form', $form);
+        $page[$region_name][$block_name]['render_example_block_render_array']['#weight'] = 999;
+      }
+    }
+  }
+
+  // Add #prefix and #suffix to a block to wrap a div around it.
+  if (variable_get('render_example_prefix', FALSE)) {
+    foreach (element_children($page) as $region_name) {
+      foreach (element_children($page[$region_name]) as $block_name) {
+        $block            = &$page[$region_name][$block_name];
+        $block['#prefix'] = '<div class="block-prefix"><p>Prefixed</p>';
+        $block['#suffix'] = '<span class="block-suffix">Block suffix</span></div>';
+      }
+    }
+  }
+  $altered_page = $page;
+
+}
 
