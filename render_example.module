@@ -185,6 +185,8 @@ function render_example_arrays() {
 /**
  * Builds the form that offers options of what items to show.
  */
+// This is just a pretty lengthy form where you tell the module what you want to see
+// or change in the page rendering.
 function render_example_demo_form($form, &$form_state) {
   $form['description'] = array(
     '#type'   => 'markup',
@@ -243,6 +245,9 @@ function render_example_demo_form($form, &$form_state) {
  * Alters the page in several different ways based on how the form has been
  * configured.
  */
+// This is where the real work of the module is done.
+// This hook_page_alter looks at settings in the variable table, and if set (from
+// the avove render_example_demo_form(), then various things on the page are altered.
 function render_example_page_alter(&$page) {
 
   $original_page = $page;
