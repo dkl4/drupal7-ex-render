@@ -363,3 +363,19 @@ function render_example_page_alter(&$page) {
 
 }
 
+/**
+ * Utility function to build a named form given a set of form elements.
+ *
+ * This is a standard form builder function that takes an additional array,
+ * which is itself a form.
+ *
+ * @param $form
+ *   The standard $form
+ * @param $form_state
+ *   The standard $form_state
+ * @param $form_items
+ *   The form items to be included in this form.
+ */
+function render_example_embedded_form($form, &$form_state, $form_items) {
+  return $form_items;
+}
