@@ -51,3 +51,64 @@ function render_example_info() {
   return t('The render example provides a <ul><li><a href="!arrays">demonstration of of render array usage</a></li><li><a href="!alter">using hook_page_alter()</a> to make various changes on a page.</li></ul>', array('!arrays' => url('examples/render_example/arrays'), '!alter' => url('examples/render_example/altering')));
 }
 
+
+/*************** Altering Section **************************
+ * The following section of the example builds and arranges the altering
+ * example.
+ */
+
+/**
+ * Builds the form that offers options of what items to show.
+ */
+function render_example_demo_form($form, &$form_state) {
+  $form['description'] = array(
+    '#type'   => 'markup',
+    '#markup' => t('This example shows what render arrays look like in the building of a page. It will not work unless the user running it has the "access devel information" privilege. It shows both the actual arrays used to build a page or block and also the capabilities of altering the page late in its lifecycle.'),
+  );
+
+  $form['show_arrays'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('Show render arrays'),
+  );
+
+  foreach (array('block', 'page') as $type) {
+    $form['show_arrays']['render_example_show_' . $type] = array(
+      '#type'          => 'checkbox',
+      '#title'         => t('Show @type render arrays', array('@type' => $type)),
+      '#default_value' => variable_get('render_example_show_' . $type, FALSE),
+    );
+  }
+
+  $form['page_fiddling'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('Make changes on page via hook_page_alter()'),
+  );
+  $form['page_fiddling']['render_example_note_about_render_arrays'] = array(
+    '#title'         => t('Add a note about render arrays to top of sidebar_first (if it exists)'),
+    '#description'   => t('Creates a simple render array that displays the use of #pre_render, #post_render, #theme, and #theme_wrappers.'),
+    '#type'          => 'checkbox',
+    '#default_value' => variable_get('render_example_note_about_render_arrays', FALSE),
+  );
+  $form['page_fiddling']['render_example_move_navigation_menu'] = array(
+    '#title'         => t('Move the navigation menu to the top of the content area'),
+    '#description'   => t('Uses hook_page_alter() to move the navigation menu into another region.'),
+    '#type'          => 'checkbox',
+    '#default_value' => variable_get('render_example_move_navigation_menu', FALSE),
+  );
+  $form['page_fiddling']['render_example_reverse_sidebar'] = array(
+    '#title'         => t('Reverse ordering of sidebar_first elements (if it exists) - will affect the above'),
+    '#description'   => t('Uses hook_page_alter() to reverse the ordering of items in sidebar_first'),
+    '#type'          => 'checkbox',
+    '#default_value' => variable_get('render_example_reverse_sidebar', FALSE),
+  );
+  $form['page_fiddling']['render_example_prefix'] = array(
+    '#title'         => t('Use #prefix and #suffix to wrap a div around every block'),
+    '#description'   => t('Uses hook_page_alter to wrap all blocks with a div using #prefix and #suffix'),
+    '#type'          => 'checkbox',
+    '#default_value' => variable_get('render_example_prefix'),
+  );
+
+  return system_settings_form($form);
+}
+
+
