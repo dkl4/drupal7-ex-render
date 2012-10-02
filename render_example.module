@@ -460,3 +460,15 @@ function render_example_theme() {
   );
   return $items;
 }
+
+
+/**
+ * Wraps a div around the already-rendered #children.
+ */
+function theme_render_example_add_div($variables) {
+  $element = $variables['element'];
+  $output = '<div class="render-example-wrapper-div">';
+  $output .= $element['#children'];
+  $output .= '</div>';
+  return $output;
+}
