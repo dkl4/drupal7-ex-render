@@ -483,3 +483,19 @@ function theme_render_array($variables) {
   $rendered = '<div class="render-array">' . $heading . $variables['element']['#children'] . '</div>';
   return $rendered;
 }
+
+
+/**
+ * Adds a #type to the element before it gets rendered.
+ * In this case, changes from the default 'ul' to 'ol'.
+ *
+ * @param $element
+ *   The element to be altered, in this case a list, ready for theme_item_list.
+ *
+ * @return
+ *   The altered list (with '#type')
+ */
+function render_example_change_to_ol($element) {
+  $element['#type'] = 'ol';
+  return $element;
+}
