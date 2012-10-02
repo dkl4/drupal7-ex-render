@@ -499,3 +499,26 @@ function render_example_change_to_ol($element) {
   $element['#type'] = 'ol';
   return $element;
 }
+
+
+/**
+ * This #post_render function gets to alter the rendered output after all
+ * theme functions have acted on it, and it receives the original data, so
+ * can make decisions based on that. In this example, no use is made of the
+ * passed-in $element.
+ *
+ * @param $markup
+ *   The already-rendered data
+ * @param unknown_type $element
+ *   The data element that was rendered
+ *
+ * @return
+ *   The altered data.
+ */
+function render_example_add_hr($markup, $element) {
+  $output = $markup . '<hr />';
+  return $output;
+}
+/**
+ * @} End of "defgroup render_example".
+ */
