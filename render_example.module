@@ -438,3 +438,25 @@ function render_example_page_alter(&$page) {
 function render_example_embedded_form($form, &$form_state, $form_items) {
   return $form_items;
 }
+
+
+/**
+ * Implements hook_theme().
+ */
+function render_example_theme() {
+  $items = array(
+    'render_example_add_div'   => array(
+      'render element' => 'element',
+    ),
+    'render_example_add_notes' => array(
+      'render element' => 'element',
+    ),
+    'render_array'             => array(
+      'render element' => 'element',
+    ),
+    'render_example_aggregate' => array(
+      'render element' => 'element',
+    ),
+  );
+  return $items;
+}
