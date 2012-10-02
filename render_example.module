@@ -175,6 +175,7 @@ function render_example_arrays() {
   return $page_array;
 }
 
+
 /**
  * A '#pre_render' function.
  *
@@ -324,7 +325,7 @@ function render_example_page_alter(&$page) {
       // Then the theme operations in #theme_wrappers can wrap more around
       // what #theme left in #chilren.
       '#theme_wrappers' => array('render_example_add_div', 'render_example_add_notes'),
-      '#weight' => -9999,
+      '#weight'         => -9999,
     );
     $page['sidebar_first']['render_array_note'] = $note;
     $page['sidebar_first']['#sorted']           = FALSE;
@@ -334,7 +335,9 @@ function render_example_page_alter(&$page) {
   // Move the navigation menu into the content area.
   if (variable_get('render_example_move_navigation_menu', FALSE) && !empty($page['sidebar_first']['system_navigation']) && !empty($page['content'])) {
     $page['content']['system_navigation']            = $page['sidebar_first']['system_navigation'];
-    $page['content']['system_navigation']['#weight'] = -99999;
+    $page['content']['custom_content'] = array('#markup' => t('<h1>Your custom rendered content can be here</h1>'),
+    );
+    $page['content']['system_navigation']['#weight'] = -99999;   // put Nav Menu at top
     unset($page['content']['#sorted']);
     unset($page['sidebar_first']['system_navigation']);
   }
