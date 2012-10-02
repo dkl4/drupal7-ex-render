@@ -213,6 +213,22 @@ function render_example_add_prefix($markup, $element) {
 }
 
 
+/**
+ * A #theme function.
+ *
+ * This #theme function has the responsibility of consolidating/rendering the
+ * children's markup and returning it, where it will be placed in the
+ * element's #children property.
+ */
+function theme_render_example_aggregate($variables) {
+  $output = '';
+  foreach (element_children($variables['element']['child']) as $item) {
+    $output .= $variables['element']['child'][$item] . $variables['element']['#separator'];
+  }
+  return $output;
+}
+
+
 /*************** Altering Section **************************
  * The following section of the example builds and arranges the altering
  * example.
