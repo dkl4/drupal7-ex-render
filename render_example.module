@@ -512,6 +512,20 @@ function theme_render_example_add_div($variables) {
 
 
 /**
+ * Wraps a div and add a little text after the rendered #children.
+ */
+function theme_render_example_add_notes($variables) {
+  $element = $variables['element'];
+  $output = '<div class="render-example-notes-wrapper-div">';
+  $output .= $element['#children'];
+  $output .= '<em>' . t('This is a note added by a #theme_wrapper') . '</em>';
+  $output .= '</div>';
+
+  return $output;
+}
+
+
+/**
  * Themes the render array (from the demonstration page).
  */
 function theme_render_array($variables) {
