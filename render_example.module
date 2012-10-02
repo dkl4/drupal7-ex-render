@@ -472,3 +472,14 @@ function theme_render_example_add_div($variables) {
   $output .= '</div>';
   return $output;
 }
+
+
+/**
+ * Themes the render array (from the demonstration page).
+ */
+function theme_render_array($variables) {
+  $heading = '<div class="render-header">' . $variables['element']['#description'] . '</div>';
+
+  $rendered = '<div class="render-array">' . $heading . $variables['element']['#children'] . '</div>';
+  return $rendered;
+}
